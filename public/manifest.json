@@ -1,0 +1,21 @@
+{
+  "name": "Crewcheck",
+  "short_name": "Crewcheck",
+  "description": "압도적 동아리 출결 및 잔디심기 완전체 앱",
+  "dir": "ltr",
+  "lang": "ko",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/dashboard",
+  "background_color": "#1c1c1e",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "https://github.com/identicons/crew.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

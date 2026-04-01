@@ -1,0 +1,218 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// -------------------------------------------------------------------------
+// NextAuth / User Models (토스+디스코드 감성 프로필 연동)
+// -------------------------------------------------------------------------
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?   
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  
+  nickname      String?   
+  hashedPassword String?  
+  bio           String?   
+  bannerColor   String?   
+  role          String    @default("MEMBER") 
+  track         String?   
+  tier          String    @default("NEWBIE") 
+
+  currentStreak Int       @default(0) 
+  totalCommits  Int       @default(0) 
+  totalDuration Int       @default(0) 
+  exp           Int       @default(0) // 퀘스트/학습으로 얻는 경험치
+
+  accounts      Account[]
+  sessions      Session[]
+
+  checkIns      CheckIn[]
+  pullRequests  PullRequest[]
+  messagesSent  ChatMessage[] @relation("SentMessages")
+  messagesRecv  ChatMessage[] @relation("ReceivedMessages")
+  userMissions  UserMission[]
+  userLearning  UserLearning[] // [NEW] 커리큘럼 완료 목록
+  memos         Memo[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  @@unique([identifier, token])
+}
+
+// -------------------------------------------------------------------------
+// 🚀 출퇴근 체크인 (하이웍스+버튼 감성)
+// -------------------------------------------------------------------------
+model CheckIn {
+  id          String    @id @default(cuid())
+  userId      String    
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  clockIn     DateTime  @default(now())
+  clockOut    DateTime?                 
+  duration    Int?                      
+  
+  message     String?                   
+  status      String    @default("ACTIVE") 
+  
+  createdAt   DateTime  @default(now())
+}
+
+// -------------------------------------------------------------------------
+// 🎓 개발 커리큘럼 (에듀테크 / 듀올링고 감성의 스킬트리)
+// -------------------------------------------------------------------------
+model Curriculum {
+  id          String   @id @default(cuid())
+  track       String   // "FRONTEND", "BACKEND", "DESIGN"
+  level       Int      // 스킬트리 단계 (1, 2, 3...)
+  title       String   // "HTML/CSS로 뼈대 세우기"
+  content     String   // 실질적 마크다운 형태의 짧고 굵은 개발 지식
+  expReward   Int      @default(50)  // 클리어 시 경험치 보상
+
+  userLearnings UserLearning[] // 완료한 유저 추적
+}
+
+model UserLearning {
+  id           String     @id @default(cuid())
+  userId       String
+  curriculumId String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  curriculum   Curriculum @relation(fields: [curriculumId], references: [id], onDelete: Cascade)
+  
+  completedAt  DateTime   @default(now())
+
+  @@unique([userId, curriculumId])
+}
+
+// -------------------------------------------------------------------------
+// 💡 오늘의 1분 개발 상식 (홈 화면 노출용)
+// -------------------------------------------------------------------------
+model KnowledgeCard {
+  id          String    @id @default(cuid())
+  title       String    // "CORS란 도대체 뭘까?"
+  summary     String    // "교차 출처 리소스 공유어쩌구..."
+  detail      String    // 상세 내용
+  publishDate DateTime  // 이 상식이 홈화면에 뜨는 노출 일자
+}
+
+// -------------------------------------------------------------------------
+// 📝 사유서 (결석계 폼 - 깃허브 PR)
+// -------------------------------------------------------------------------
+model PullRequest {
+  id          String    @id @default(cuid())
+  userId      String    
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String    
+  description String    
+  targetDate  DateTime  
+  status      String    @default("OPEN") 
+  createdAt   DateTime  @default(now())
+  resolvedAt  DateTime? 
+}
+
+// -------------------------------------------------------------------------
+// 🎮 기존 주간 미션 시스템
+// -------------------------------------------------------------------------
+model Mission {
+  id          String        @id @default(cuid())
+  title       String        
+  description String?
+  rewardExp   Int           @default(100)
+  targetCount Int           @default(1)
+  isWeekly    Boolean       @default(false)
+  expiresAt   DateTime?     
+  userMissions UserMission[]
+  createdAt   DateTime      @default(now())
+}
+
+model UserMission {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  missionId   String
+  mission     Mission  @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  progress    Int      @default(0) 
+  isCompleted Boolean  @default(false)
+  completedAt DateTime?
+  @@unique([userId, missionId])
+}
+
+// -------------------------------------------------------------------------
+// 📅 관리자 달력 일정 (사이렌 자동 생성 트리거 유지)
+// -------------------------------------------------------------------------
+model Schedule {
+  id          String    @id @default(cuid())
+  title       String    
+  datetime    DateTime  
+  location    String?
+  isRequired  Boolean   @default(true) 
+  createdAt   DateTime  @default(now())
+}
+
+// -------------------------------------------------------------------------
+// 🔒 1:1 비밀 카톡 채팅 (E2EE 암호화됨)
+// -------------------------------------------------------------------------
+model ChatMessage {
+  id          String    @id @default(cuid())
+  senderId    String
+  sender      User      @relation("SentMessages", fields: [senderId], references: [id])
+  receiverId  String
+  receiver    User      @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  encryptedBlob String  
+  isRead      Boolean   @default(false) 
+  createdAt   DateTime  @default(now())
+}
+
+// -------------------------------------------------------------------------
+// 🧩 앱 홈화면 메모 위젯
+// -------------------------------------------------------------------------
+model Memo {
+  id          String    @id @default(cuid())
+  userId      String    
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content     String
+  order       Int       @default(0) 
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
