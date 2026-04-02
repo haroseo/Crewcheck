@@ -1,15 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { MessageCircle, Lock } from "lucide-react";
+import { MessageCircle, Lock, Inbox } from "lucide-react";
 import Link from "next/link";
 
 export default function ChatListPage() {
-  const chats = [
-    { id: "user-1", name: "김개발", lastMsg: "내일 스터디 참석 어때?", time: "오후 3:24", unread: 2 },
-    { id: "user-2", name: "이디자인", lastMsg: "피그마 파일 공유했어", time: "오전 11:05", unread: 0 },
-    { id: "user-3", name: "박기획", lastMsg: "회의록 확인해주세요", time: "어제", unread: 1 },
-  ];
+  const chats: any[] = []; // 실제로는 DB에서 가져올 채팅 목록
 
   return (
     <div className="safe-top" style={{ paddingBottom: '16px' }}>
@@ -22,42 +18,27 @@ export default function ChatListPage() {
       </header>
 
       <div className="section" style={{ marginTop: '16px' }}>
-        {chats.map((chat, i) => (
-          <Link key={chat.id} href={`/chat/${chat.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-            <motion.div
-              whileTap={{ scale: 0.98 }}
-              className="list-item"
-              style={{ cursor: 'pointer' }}
-            >
-              <div style={{
-                width: '48px', height: '48px', borderRadius: '50%', flexShrink: 0,
-                background: `hsl(${i * 90 + 200}, 60%, 70%)`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#fff', fontWeight: 700, fontSize: '18px'
-              }}>
-                {chat.name[0]}
-              </div>
-              <div className="list-content">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        {chats.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+            <Inbox size={48} color="var(--text-disabled)" style={{ margin: '0 auto 16px' }} />
+            <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-tertiary)', marginBottom: '6px' }}>
+              아직 대화가 없습니다
+            </p>
+            <p style={{ fontSize: '13px', color: 'var(--text-disabled)' }}>
+              동아리원과 1:1 암호화 채팅을 시작해보세요
+            </p>
+          </div>
+        ) : (
+          chats.map((chat: any) => (
+            <Link key={chat.id} href={`/chat/${chat.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <div className="list-item" style={{ cursor: 'pointer' }}>
+                <div className="list-content">
                   <span className="list-title">{chat.name}</span>
-                  <span style={{ fontSize: '12px', color: 'var(--text-disabled)' }}>{chat.time}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '3px' }}>
-                  <span className="list-desc" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{chat.lastMsg}</span>
-                  {chat.unread > 0 && (
-                    <span style={{
-                      minWidth: '20px', height: '20px', borderRadius: '100px',
-                      background: 'var(--red)', color: '#fff', fontSize: '11px', fontWeight: 700,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 6px', flexShrink: 0, marginLeft: '8px'
-                    }}>
-                      {chat.unread}
-                    </span>
-                  )}
                 </div>
               </div>
-            </motion.div>
-          </Link>
-        ))}
+            </Link>
+          ))
+        )}
       </div>
     </div>
   );

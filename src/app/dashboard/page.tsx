@@ -45,24 +45,15 @@ export default async function DashboardPage() {
 
       {/* 출석률 + 스트릭 */}
       <div className="section" style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-        {/* 연속 출석 */}
         <div className="card" style={{ background: 'linear-gradient(135deg, #ff6b6b, #ee5a24)', color: '#fff', padding: '18px' }}>
           <p style={{ fontSize: '12px', fontWeight: 600, opacity: 0.8 }}>연속 출석</p>
-          <p style={{ fontSize: '28px', fontWeight: 800, marginTop: '4px', letterSpacing: '-1px' }}>14일</p>
-          <span style={{ 
-            fontSize: '11px', fontWeight: 600, background: 'rgba(255,255,255,0.25)',
-            padding: '3px 8px', borderRadius: '100px', marginTop: '8px', display: 'inline-block'
-          }}>상위 5%</span>
+          <p style={{ fontSize: '28px', fontWeight: 800, marginTop: '4px', letterSpacing: '-1px' }}>0일</p>
+          <span style={{ fontSize: '11px', fontWeight: 600, background: 'rgba(255,255,255,0.25)', padding: '3px 8px', borderRadius: '100px', marginTop: '8px', display: 'inline-block' }}>출석을 시작하세요</span>
         </div>
-
-        {/* 누적 EXP */}
         <div className="card" style={{ background: 'linear-gradient(135deg, var(--blue), #6366f1)', color: '#fff', padding: '18px' }}>
           <p style={{ fontSize: '12px', fontWeight: 600, opacity: 0.8 }}>누적 경험치</p>
-          <p style={{ fontSize: '28px', fontWeight: 800, marginTop: '4px', letterSpacing: '-1px' }}>1,250</p>
-          <span style={{ 
-            fontSize: '11px', fontWeight: 600, background: 'rgba(255,255,255,0.25)',
-            padding: '3px 8px', borderRadius: '100px', marginTop: '8px', display: 'inline-block'
-          }}>EXP</span>
+          <p style={{ fontSize: '28px', fontWeight: 800, marginTop: '4px', letterSpacing: '-1px' }}>0</p>
+          <span style={{ fontSize: '11px', fontWeight: 600, background: 'rgba(255,255,255,0.25)', padding: '3px 8px', borderRadius: '100px', marginTop: '8px', display: 'inline-block' }}>EXP</span>
         </div>
       </div>
 
@@ -71,13 +62,13 @@ export default async function DashboardPage() {
         <div className="card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <span className="t-h3">학기 목표 달성률</span>
-            <span style={{ fontSize: '20px', fontWeight: 800, color: 'var(--blue)' }}>65%</span>
+            <span style={{ fontSize: '20px', fontWeight: 800, color: 'var(--blue)' }}>0%</span>
           </div>
           <div className="progress-track">
-            <div className="progress-fill" style={{ width: '65%' }} />
+            <div className="progress-fill" style={{ width: '0%' }} />
           </div>
           <p style={{ fontSize: '13px', color: 'var(--text-tertiary)', marginTop: '8px' }}>
-            80% 달성까지 15% 남았습니다
+            80% 달성을 목표로 출석을 시작해보세요
           </p>
         </div>
       </div>
