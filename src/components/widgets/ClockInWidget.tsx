@@ -1,93 +1,63 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
-import { Play, Square, Loader2 } from "lucide-react";
-import { toggleClockIn, getActiveClockIn } from "@/app/actions/checkin";
+import { useState } from "react";
+import { Play, Square, Clock } from "lucide-react";
 
 export default function ClockInWidget() {
-  const [isClockedIn, setIsClockedIn] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [mins, setMins] = useState(0);
+  const [isActive, setIsActive] = useState(false);
+  const [startTime, setStartTime] = useState<Date | null>(null);
+  const [elapsed, setElapsed] = useState("00:00:00");
 
-  useEffect(() => {
-    getActiveClockIn().then((res) => {
-      if (res) {
-        setIsClockedIn(res.isClockedIn);
-        setMins(res.currentDuration || 0);
-      }
-      setLoading(false);
-    });
-  }, []);
-
-  const handleToggle = async () => {
-    if (loading) return;
-    setLoading(true);
-
-    try {
-      const result: any = await toggleClockIn();
-      if (!result) return;
-
-      if (!result.isClockedIn) {
-        // 퇴근 완료
-        setIsClockedIn(false);
-        setMins(result.duration || 0);
-        setShowConfetti(true);
-        setTimeout(() => setShowConfetti(false), 3500);
-      } else {
-        // 출근 시작
-        setIsClockedIn(true);
-        setMins(0);
-      }
-    } catch (err: any) {
-      console.error(err);
-      alert(err.message || "서버 통신 실패");
-    } finally {
-      setLoading(false);
+  const handleToggle = () => {
+    if (!isActive) {
+      setStartTime(new Date());
+      setIsActive(true);
+      const start = Date.now();
+      const timer = setInterval(() => {
+        const diff = Date.now() - start;
+        const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
+        const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+        const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+        setElapsed(`${h}:${m}:${s}`);
+      }, 1000);
+      (window as any).__clockTimer = timer;
+    } else {
+      clearInterval((window as any).__clockTimer);
+      setIsActive(false);
     }
   };
 
   return (
-    <div className="widget" style={{ 
-      position: 'relative', overflow: 'hidden', padding: '24px', 
-      background: isClockedIn ? 'var(--card-bg)' : 'linear-gradient(135deg, var(--primary), #a855f7)',
-      color: isClockedIn ? 'var(--foreground)' : '#fff',
-      transition: 'background 0.5s ease'
-    }}>
-      {/* 팡파레 이펙트 */}
-      {showConfetti && (
-        <motion.div 
-          initial={{ opacity: 1, scale: 0 }} animate={{ opacity: 0, scale: 2 }} transition={{ duration: 1.5 }}
-          style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '200px', height: '200px', background: 'radial-gradient(circle, #fecfef 0%, transparent 70%)', zIndex: 0 }}
-        />
-      )}
-
-      <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <h3 style={{ fontSize: '18px', fontWeight: 800, opacity: isClockedIn ? 1 : 0.95 }}>
-            {showConfetti ? `축하합니다! ${mins}분 달성 🎉` : (isClockedIn ? '🔥 미션 수행 중...' : '오늘 일정 시작할까요?')}
-          </h3>
-          <p style={{ fontSize: '14px', marginTop: '6px', opacity: 0.8, fontWeight: 600 }}>
-            {showConfetti ? '기록이 잔디밭에 영구 박제되었습니다.' : (isClockedIn ? `총 ${mins}분 경과 (클릭하여 퇴근)` : '버튼 한 번으로 즉시 출근 기록 저장')}
-          </p>
+    <div className="card">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Clock size={18} color="var(--text-tertiary)" />
+          <span className="t-h3">출퇴근</span>
         </div>
-
-        <motion.button 
-           whileTap={{ scale: loading ? 1 : 0.9 }}
-           onClick={handleToggle}
-           disabled={loading}
-           style={{
-             width: '56px', height: '56px', borderRadius: '50%', border: 'none', cursor: loading ? 'wait' : 'pointer',
-             background: isClockedIn ? '#ffe4e6' : '#fff',
-             color: isClockedIn ? '#e11d48' : 'var(--primary)',
-             display: 'flex', alignItems: 'center', justifyContent: 'center',
-             boxShadow: 'var(--shadow-lg)', flexShrink: 0
-           }}
-        >
-          {loading ? <Loader2 className="animate-spin" size={24}/> : (isClockedIn ? <Square fill="currentColor" strokeWidth={0}/> : <Play fill="currentColor" strokeWidth={0} style={{ marginLeft: '4px' }}/>)}
-        </motion.button>
+        {isActive && <span className="badge badge-green">활동 중</span>}
       </div>
+
+      <p style={{
+        fontSize: '36px', fontWeight: 800, letterSpacing: '-1px',
+        textAlign: 'center', margin: '8px 0 20px',
+        fontVariantNumeric: 'tabular-nums',
+        color: isActive ? 'var(--text-primary)' : 'var(--text-disabled)'
+      }}>
+        {elapsed}
+      </p>
+
+      <button
+        className={`btn ${isActive ? 'btn-danger' : 'btn-blue'} btn-lg`}
+        onClick={handleToggle}
+      >
+        {isActive ? <><Square size={18} /> 퇴근하기</> : <><Play size={18} /> 출근하기</>}
+      </button>
+
+      {startTime && (
+        <p style={{ fontSize: '12px', color: 'var(--text-tertiary)', textAlign: 'center', marginTop: '10px' }}>
+          {startTime.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}에 시작
+        </p>
+      )}
     </div>
   );
 }
