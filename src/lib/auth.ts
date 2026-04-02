@@ -43,10 +43,24 @@ export const authOptions: NextAuthOptions = {
     newUser: "/onboarding", // 인증 완료 시 온보딩으로 이동
   },
   callbacks: {
+    async jwt({ token, user }) {
+      // 최초 로그인(user 객체 존재)이 넘어올 때, DB에서 role 체크
+      if (user) {
+        const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
+        token.role = dbUser?.role || "MEMBER";
+        // @ts-ignore
+        token.lastReadNoticeId = dbUser?.lastReadNoticeId;
+      }
+      return token;
+    },
     async session({ session, token }) {
       if (token && session.user) {
         // @ts-ignore
         session.user.id = token.sub!;
+        // @ts-ignore
+        session.user.role = token.role;
+        // @ts-ignore
+        session.user.lastReadNoticeId = token.lastReadNoticeId;
       }
       return session;
     }

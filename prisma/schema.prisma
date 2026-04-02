@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("crewcheck_DATABASE_URL")
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
 // -------------------------------------------------------------------------
@@ -59,6 +59,8 @@ model User {
   totalDuration Int       @default(0) 
   exp           Int       @default(0) // 퀘스트/학습으로 얻는 경험치
 
+  lastReadNoticeId String?  // 가장 최근에 확인한 공지사항 ID
+
   accounts      Account[]
   sessions      Session[]
 
@@ -69,6 +71,9 @@ model User {
   userMissions  UserMission[]
   userLearning  UserLearning[] // [NEW] 커리큘럼 완료 목록
   memos         Memo[]
+
+  noticesAuthored   Notice[] @relation("NoticesAuthored")
+  withdrawalRequest WithdrawalRequest? @relation("UserWithdrawal")
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -215,4 +220,28 @@ model Memo {
   order       Int       @default(0) 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+// -------------------------------------------------------------------------
+// 📢 전체 공지사항 (Notification)
+// -------------------------------------------------------------------------
+model Notice {
+  id          String    @id @default(cuid())
+  title       String
+  content     String
+  authorId    String
+  author      User      @relation("NoticesAuthored", fields: [authorId], references: [id])
+  createdAt   DateTime  @default(now())
+}
+
+// -------------------------------------------------------------------------
+// 🚪 회원 탈퇴 대기열
+// -------------------------------------------------------------------------
+model WithdrawalRequest {
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  user        User      @relation("UserWithdrawal", fields: [userId], references: [id], onDelete: Cascade)
+  status      String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  reason      String?
+  createdAt   DateTime  @default(now())
 }

@@ -111,11 +111,42 @@ body {
     background-color: var(--bg-float);
   }
   .app-container {
-    box-shadow: var(--shadow-lg);
+    max-width: none;
+    display: flex;
+    box-shadow: none;
+    border: none;
     border-radius: 0;
-    background-color: var(--bg);
+    justify-content: center;
+  }
+  .bottom-nav {
+    display: none !important;
+  }
+  .sidebar-nav {
+    display: flex !important;
+    width: 260px;
+    background: var(--bg-elevated);
+    border-right: 1px solid var(--border);
+    flex-direction: column;
+    padding: 24px 16px;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+  }
+  .main-content {
+    flex: 1;
+    max-width: 720px;
+    padding: 32px;
   }
 }
+
+.sidebar-nav {
+  display: none;
+}
+.main-content {
+  flex: 1;
+  width: 100%;
+}
+
 
 /* ========================================
    TYPOGRAPHY (Toss style)

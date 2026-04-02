@@ -30,9 +30,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="ko" suppressHydrationWarning>
       <body>
         <Providers>
-          <div className="app-container">
-            {children}
-          </div>
+          {children}
         </Providers>
       </body>
     </html>
